@@ -1,30 +1,60 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
+
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={ logo } className="App-logo" alt="logo" />
-        <p>
-          Edit
-          <code>
-            src/App.js
-          </code>
-          and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      loadingMessage: true,
+      dogs: '',
+    };
+    this.fetchDog = this.fetchDog.bind(this);
+    this.componentDidUpdate = this.componentDidUpdate.bind(this);
+  }
+
+  componentDidMount() {
+    this.fetchDog();
+  }
+
+  shouldComponentUpdate(_nextProps, nextState) {
+    if (nextState.dogs.includes('terrier')) {
+      return false;
+    }
+    return true;
+  }
+
+  componentDidUpdate() {
+    const { dogs, loadingMessage } = this.state;
+    localStorage.setItem('dogImage', dogs);
+    const breed = dogs.split('/')[4];
+    if (loadingMessage === false) alert(`Raça: ${breed}`);
+  }
+
+  fetchDog() {
+    this.setState({ loadingMessage: true }, () => fetch('https://dog.ceo/api/breeds/image/random')
+      .then((response) => response.json())
+      .then((value) => this.setState({
+        dogs: value.message,
+        loadingMessage: false,
+      })));
+  }
+
+  render() {
+    const { dogs, loadingMessage } = this.state;
+    const LOADING = 'Loading...';
+    const image = <img src={ dogs } alt="dogs random" />;
+    return (
+      <div>
+        <h1>Dogs</h1>
+        <span>{loadingMessage ? LOADING : image}</span>
+        <br />
+        <br />
+        <button onClick={this.fetchDog} type="button">Next dog</button>
+      </div>
+    );
+  }
+
 }
 
 export default App;
